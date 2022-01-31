@@ -7,22 +7,36 @@ public class GyroCam : MonoBehaviour
 {
   
     public Transform Body;
-    private PlayerInput input;
+    public PlayerInput input;
     public float sensitivitiy = 100.0f;
-    private float xrot = 0f;
-    private Vector3 camrot;
+    public float xrot = 0f;
+    public Vector3 camrot;
     public PlayerControl inputactions;
     public bool isFPS = true;
+    public int battery = 100;
+    public float distanceToTank = 50;
+    public bool isTeathered = true;
+    
+    public CameraBaseState currecntcamState;
+    public CamFPSState C_FPS_State = new CamFPSState();
+   
+    //drone tps mode
+    public CamNormalState C_NormalState = new CamNormalState();
+    public CamRocketState C_RocketState = new CamRocketState();
+    public CamMortarState C_MortarState = new CamMortarState();
+    public CamUnhookedState C_UnhookedState = new CamUnhookedState();
+    public CamDisabledState C_DisabledState = new CamDisabledState();
 
     private void ToggleCamPosition()
     {
         Debug.Log("Switching camera view");
-        isFPS = false;
+      
     }
 
     private void Awake()
     {
         input = GetComponent<PlayerInput>();
+        inputactions = new PlayerControl();
         inputactions.Player.Toggle.performed += contex => ToggleCamPosition();
     }
 
@@ -32,6 +46,9 @@ public class GyroCam : MonoBehaviour
         Input.gyro.enabled = true;
         inputactions.Enable();
         camrot = transform.localRotation.eulerAngles;
+        Debug.Log("FPS cam State");
+        currecntcamState = C_FPS_State;
+        currecntcamState.EnterState(this);
     }
 
     // Update is called once per frame
@@ -53,15 +70,15 @@ public class GyroCam : MonoBehaviour
         //this.transform.Rotate(-Input.gyro.rotationRateUnbiased.x - inputmove.y, 0f, 0f);
         //Body.Rotate(0f,-Input.gyro.rotationRateUnbiased.y + inputmove.x,0f);
 
+        //check state
+        currecntcamState.UpdateState(this);
 
         //brakeys FPS TUT
-        float joystickX = input.actions["Look"].ReadValue<Vector2>().x * sensitivitiy *Time.deltaTime;
-        float joystickY = input.actions["Look"].ReadValue<Vector2>().y * sensitivitiy *Time.deltaTime;
-
-        xrot -= joystickY;
-
-        transform.localRotation = Quaternion.Euler(xrot, 0F, 0F);
-        xrot = Mathf.Clamp(xrot, -90f, 90f);
-        Body.Rotate(Vector3.up * joystickX);
+      
+    }
+    public void SwitchState(CameraBaseState state)
+    {
+        currecntcamState = state;
+        state.EnterState(this);
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerControllerScript : MonoBehaviour
 {
+
     private CharacterController controller;
     private Vector3 playerVelocity;
     private bool groundedPlayer;
